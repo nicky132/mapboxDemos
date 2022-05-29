@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MapBox加载WMS地图服务</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.50.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        /*隐藏logo*/
+        .mapboxgl-ctrl.mapboxgl-ctrl-attrib{
+            display: none !important;
+        }
+        .mapboxgl-ctrl-logo{
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<div id='map'></div>
+<script >
+    mapboxgl.accessToken = 'pk.eyJ1IjoiaGFtYnVnZXJkZXZlbG9wIiwiYSI6ImNqNXJtZjF4ZzB3em4yd21pZmVqbHlleDAifQ.I9eqVjtotz7jaU7XcJm9pQ';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v10',
+        center: [108.438,34.431],
+        zoom: 7
+    });
+    map.on("load",function () {
+        map.addLayer({
+            'id': 'wms-test-layer',
+            'type': 'raster',
+            'source': {
+                'type': 'raster',
+                'tiles': [
+                    "http://t0.tianditu.gov.cn/vec_c/wmts?tk=3c6db3961ea04621c421e49227049f7d"
+                ],
+                'tileSize': 256
+            },
+            'paint': {}
+        });
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+      mapboxgl.accessToken = 'access_token';
+      const map = new mapboxgl.Map({
+         container: 'map',
+         style: {
+            "version": 8,
+            "metadata": {"maputnik:renderer": "mbgljs"},
+            "sources": {
+                "wms-tiles": {
+                "type": "raster",
+                "tiles": [
+                    "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                ],
+                "tileSize": 256
+                }
+            },
+            "layers": [
+                {
+                  "id": "background-id",
+                  "type": "background",
+                  "metadata": {"mapbox:name": "test"},
+                  "layout": {"visibility": "visible"},
+                  "paint": {
+                    "background-color": "#ff0033",
+                    "background-opacity": 1
+                  }
+                },
+                {"id": "wmsLayer", "type": "raster", "source": "wms-tiles"}
+            ],
+            "id": "30kf4oj2r"
+        },
+      });
+      map.addControl(new mapboxgl.NavigationControl());
+  </script>
+</body>
+</html>

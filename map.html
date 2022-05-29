@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="map.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="http://api.tianditu.gov.cn/api?v=4.0&tk=3c6db3961ea04621c421e49227049f7d"></script>
+    <title>天地图</title>
+    <style>
+        html, body{
+            width:100%; 
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-size: 16px;
+        }
+        #container,#loadMap {
+            width:100%; 
+            height: 100%; 
+        }
+    </style>
+</head>
+<body>
+    <div id="loadMap"></div>
+    <script>
+        var map=""
+        initMap()
+        function initMap(){
+            map = new T.Map('loadMap');
+            map.centerAndZoom(new T.LngLat(120.5689390,30.2653626), 12);
+            map.setStyle('black');      //设置地图的样式
+            map.Ow.style.backgroundColor = 'rgb(0,70,226)';  //设置地图的背景色
+        }
+    </script>
+</body>
+</html>

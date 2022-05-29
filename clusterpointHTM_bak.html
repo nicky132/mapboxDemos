@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>显示具有自定义属性的HTML聚类</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <!-- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.css' rel='stylesheet' /> -->
+    <script src='lib/mapbox-gl.js'></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/4.1.0/echarts.min.js"></script>
+    <link href='./lib/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+
+<div id='map'></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoid2ViYjI0aCIsImEiOiJjazU3a2lkbW4wNGJrM2RvNnNrNnBzbGlxIn0.GGnF34IsMQyqKNoam241tA';
+var map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 0.3,
+    center: [0, 20],
+    style: 'mapbox://styles/mapbox/light-v10'
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+map.on('load', function () {
+    map.addSource("earthquakes", {
+        type: "geojson",
+        data: "https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson",
+        cluster: true,
+    });
+
+    map.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "earthquakes",
+        filter: ["has", "point_count"],
+        paint: {
+            "circle-color": [
+                "step",
+                ["get", "point_count"],
+                "#51bbd6",
+                100,
+                "#f1f075",
+                750,
+                "#f28cb1"
+            ],
+            "circle-radius": [
+                "step",
+                ["get", "point_count"],
+                20,
+                100,
+                30,
+                750,
+                40
+            ]
+        }
+    });
+
+    map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "earthquakes",
+        filter: ["has", "point_count"],
+        layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+            "text-size": 14
+        }
+    });
+
+    map.addLayer({
+        "id": "unclustered-point",
+        "type": "symbol",
+        "source": "earthquakes",
+        "filter": ["!=", "cluster", true],
+        "layout": {
+            "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+            "text-size": 12
+        },
+        "paint": {
+            "text-color": "red"
+        }
+    });
+
+    var markers = {};
+    var markersOnScreen = {};
+    function updateMarkers() {
+        console.log("updateMarkers")
+        var newMarkers = {};
+        var features = map.querySourceFeatures('earthquakes');
+        for (var i = 0; i < features.length; i++) {
+            var coords = features[i].geometry.coordinates;
+            var props = features[i].properties;
+            console.log("props==",props)
+            if (props.cluster) continue;
+            var id = props.cluster_id;
+            var marker = markers[id];
+            console.log("id==",props.id,"marker==",marker)
+            if (!marker) {
+                var el = createDonutChart(props);
+                marker = markers[id] = new mapboxgl.Marker({element: el}).setLngLat(coords);
+            }
+            newMarkers[id] = marker;
+
+            if (!markersOnScreen[id])
+                marker.addTo(map);
+        }
+        // for every marker we've added previously, remove those that are no longer visible
+        for (id in markersOnScreen) {
+            if (!newMarkers[id])
+                markersOnScreen[id].remove();
+        }
+        markersOnScreen = newMarkers;
+    }
+    // after the GeoJSON data is loaded, update markers on the screen and do so on every map move/moveend
+    map.on('data', function (e) {
+        if (e.sourceId !== 'earthquakes' || !e.isSourceLoaded) return;
+        map.on('move', updateMarkers);
+        map.on('moveend', updateMarkers);
+        updateMarkers();
+    });
+    setTimeout(()=>{
+        drawEcharts('mapboxid');
+    },500)
+});
+
+// code for creating an SVG donut chart from feature properties
+function createDonutChart(props) {
+    console.log("props",props)
+    const el = document.createElement('div');
+    el.id="mapboxid";
+    el.className = 'marker';
+    el.style.backgroundImage = 'url(' + 'lib/images/cat.png' + ')';
+    el.innerHTML = props.mag;
+    el.style.backgroundSize = 'cover';
+    el.style.width = 32 + 'px';
+    el.style.height = 32 + 'px';
+    el.style.cursor = 'pointer';
+    return el
+}
+
+function drawEcharts(id){
+    //指定图标的配置和数据
+    var option = {
+        tooltip: {
+            trigger: 'item'
+        },
+        series: [
+            {
+            name: 'Access From',
+            type: 'pie',
+            radius: '50%',
+            data: [
+                { value: 1048, name: 'Search Engine' },
+                { value: 735, name: 'Direct' },
+                { value: 580, name: 'Email' },
+                { value: 484, name: 'Union Ads' },
+                { value: 300, name: 'Video Ads' }
+            ],
+            emphasis: {
+                itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+            }
+        ]
+    };
+    //初始化echarts实例
+    var myChart = echarts.init(document.getElementById(id));
+    //使用制定的配置项和数据显示图表
+    myChart.setOption(option);
+}
+</script>
+
+</body>
+</html>
